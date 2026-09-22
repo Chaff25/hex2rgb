@@ -1,122 +1,79 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import type { ChangeEvent } from 'react';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+const HEX_PATTERN = /^#([0-9a-fA-F]{6})$/;
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+interface RgbColor {
+  r: number;
+  g: number;
+  b: number;
 }
 
-export default App
+function parseHex(hex: string): RgbColor | null {
+  if (!HEX_PATTERN.test(hex)) {
+    return null;
+  }
+  return {
+    r: parseInt(hex.slice(1, 3), 16),
+    g: parseInt(hex.slice(3, 5), 16),
+    b: parseInt(hex.slice(5, 7), 16),
+  };
+}
+
+function App() {
+  const [hex, setHex] = useState('#9921ff');
+  const [rgb, setRgb] = useState<RgbColor | null>({
+    r: 153, g: 33, b: 255,
+  });
+  const [error, setError] = useState(false);
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setHex(value);
+
+    if (value.length !== 7) {
+      setRgb(null);
+      setError(false);
+      return;
+    }
+
+    const parsed = parseHex(value);
+    if (parsed) {
+      setRgb(parsed);
+      setError(false);
+    } else {
+      setRgb(null);
+      setError(true);
+    }
+  };
+
+  const bg = rgb
+    ? `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`
+    : '#9921ff';
+
+  return (
+    <div className="app" style={{ backgroundColor: bg }}>
+      <label className="container">
+        <input
+          type="text"
+          className="input-field"
+          placeholder="Введите код цвета..."
+          value={hex}
+          onChange={handleChange}
+          maxLength={7}
+        />
+
+        {rgb && !error && (
+          <span className="result">{`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`}</span>
+        )}
+
+        {error && (
+          <span className="result error">Ошибка!</span>
+        )}
+      </label>
+    </div>
+  );
+}
+
+export default App;
